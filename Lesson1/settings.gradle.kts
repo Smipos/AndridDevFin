@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "les1"
 include(":app")
- 
+include(":buttonclicker")
+include(":layoutactivity")
+include(":layouttype")
+include(":control_lesson1")
