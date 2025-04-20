@@ -7,6 +7,7 @@ import android.view.Menu;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -15,6 +16,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import ru.mirea.mironovsp.mireaproject.databinding.ActivityMainBinding;
+
+import android.app.AlertDialog;
+import android.widget.Toast;
+
+import ru.mirea.mironovsp.mireaproject.ui.FilesFragment;
+import androidx.navigation.NavController;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,14 +36,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.appBarMain.toolbar);
+
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show();
+                NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
+
+                if (navController.getCurrentDestination().getId() == R.id.nav_files) {
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+                    if (fragment != null && fragment.getChildFragmentManager().getPrimaryNavigationFragment() instanceof FilesFragment) {
+                        FilesFragment filesFragment = (FilesFragment) fragment.getChildFragmentManager().getPrimaryNavigationFragment();
+                        showCreateFileDialog(filesFragment);
+                    }
+                } else {
+                    Snackbar.make(view, "Действие доступно только в разделе 'Работа с файлами'", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null)
+                            .setAnchorView(R.id.fab).show();
+                }
             }
         });
+
+
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
 
@@ -45,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_gallery,
                 R.id.nav_slideshow,
                 R.id.nav_data,
+                R.id.nav_profile,
+                R.id.nav_files,
                 R.id.nav_browser,
                 R.id.nav_worker)
                 .setOpenableLayout(drawer)
@@ -54,9 +76,20 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
     }
 
+    private void showCreateFileDialog(FilesFragment filesFragment) {
+        new AlertDialog.Builder(this)
+                .setTitle("Новая запись")
+                .setMessage("Выберите действие:")
+                .setPositiveButton("Шифрование", (dialog, which) -> {
+                    filesFragment.clearFields();
+                    Toast.makeText(this, "Готово к шифрованию", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Отмена", null)
+                .show();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
