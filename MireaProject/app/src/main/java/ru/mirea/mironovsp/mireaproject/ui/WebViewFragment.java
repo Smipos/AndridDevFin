@@ -1,5 +1,6 @@
 package ru.mirea.mironovsp.mireaproject.ui;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -15,6 +16,7 @@ import ru.mirea.mironovsp.mireaproject.R;
 public class WebViewFragment extends Fragment {
     private WebView webView;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

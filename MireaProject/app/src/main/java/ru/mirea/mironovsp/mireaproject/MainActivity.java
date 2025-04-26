@@ -6,6 +6,7 @@ import android.view.Menu;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -27,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -65,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_gallery,
                 R.id.nav_slideshow,
                 R.id.nav_data,
+                R.id.nav_api,
                 R.id.nav_profile,
                 R.id.nav_files,
                 R.id.nav_browser,
@@ -100,4 +105,11 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mAuth.signOut();
+    }
+
 }
