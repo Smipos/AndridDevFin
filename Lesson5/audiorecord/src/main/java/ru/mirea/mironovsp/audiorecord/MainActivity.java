@@ -6,179 +6,155 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    private MediaRecorder mediaRecorder;
-    private MediaPlayer mediaPlayer;
-    private String fileName;
-    private boolean isRecording = false;
-    private boolean isPlaying = false;
+    private static final int REQUEST_CODE_PERMISSION = 200;
+    private boolean isWork = false;
+    private boolean isStartRecording = true;
+    private boolean isStartPlaying = true;
 
-    private Button recordButton, stopButton, playButton;
-    private TextView statusText;
+    private MediaRecorder recorder;
+    private MediaPlayer player;
+    private String recordFilePath;
+
+    private Button recordButton;
+    private Button playButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Инициализация UI элементов
         recordButton = findViewById(R.id.recordButton);
-        stopButton = findViewById(R.id.stopButton);
         playButton = findViewById(R.id.playButton);
-        statusText = findViewById(R.id.statusText);
 
-        // Проверка и запрос разрешений
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
+        playButton.setEnabled(false);
 
+        // Устанавливаем путь к .mp4 файлу
+        recordFilePath = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+                "/audiorecordtest.mp4").getAbsolutePath();
+
+        // Проверка разрешений
+        int audioPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
+        isWork = audioPermission == PackageManager.PERMISSION_GRANTED;
+
+        if (!isWork) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_RECORD_AUDIO_PERMISSION);
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQUEST_CODE_PERMISSION);
         }
 
-        // Генерация имени файла
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + timeStamp + "_audio_record.3gp";
-
-        // Обработчики кнопок
+        // Кнопка записи
         recordButton.setOnClickListener(v -> {
-            if (!isRecording) {
+            if (isStartRecording) {
                 startRecording();
-            }
-        });
-
-        stopButton.setOnClickListener(v -> {
-            if (isRecording) {
+                recordButton.setText("Stop Recording");
+                playButton.setEnabled(false);
+            } else {
                 stopRecording();
-            } else if (isPlaying) {
-                stopPlaying();
+                recordButton.setText("Start Recording");
+                playButton.setEnabled(true);
             }
+            isStartRecording = !isStartRecording;
         });
 
+        // Кнопка воспроизведения
         playButton.setOnClickListener(v -> {
-            if (!isPlaying) {
+            if (isStartPlaying) {
                 startPlaying();
+                playButton.setText("Stop Playing");
+                recordButton.setEnabled(false);
+            } else {
+                stopPlaying();
+                playButton.setText("Start Playing");
+                recordButton.setEnabled(true);
             }
+            isStartPlaying = !isStartPlaying;
         });
     }
 
     private void startRecording() {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(fileName);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4); // MP4 формат
+        recorder.setOutputFile(recordFilePath);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);    // AAC кодек
 
         try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
-            isRecording = true;
-
-            // Обновление UI
-            recordButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            playButton.setEnabled(false);
-            statusText.setText("Идет запись...");
-
+            recorder.prepare();
+            recorder.start();
+            Toast.makeText(this, "Recording started (mp4)", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Ошибка при подготовке записи", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void stopRecording() {
-        if (mediaRecorder != null) {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
-            isRecording = false;
+        if (recorder != null) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
 
-            // Обновление UI
-            recordButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            playButton.setEnabled(true);
-            statusText.setText("Запись завершена");
-        }
-    }
-
-    private void startPlaying() {
-        mediaPlayer = new MediaPlayer();
-        try {
-            mediaPlayer.setDataSource(fileName);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            isPlaying = true;
-
-            // Обновление UI
-            recordButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            playButton.setEnabled(false);
-            statusText.setText("Воспроизведение...");
-
-            mediaPlayer.setOnCompletionListener(mp -> stopPlaying());
-
-        } catch (IOException e) {
-            Toast.makeText(this, "Ошибка при воспроизведении", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-    }
-
-    private void stopPlaying() {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-            isPlaying = false;
-
-            // Обновление UI
-            recordButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            playButton.setEnabled(true);
-            statusText.setText("Готов к записи");
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Разрешения получены", Toast.LENGTH_SHORT).show();
+            File file = new File(recordFilePath);
+            if (file.exists()) {
+                Toast.makeText(this, "Файл создан: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "Разрешения необходимы для работы приложения", Toast.LENGTH_SHORT).show();
-                finish();
+                Toast.makeText(this, "Файл НЕ создан!", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mediaRecorder != null) {
-            mediaRecorder.release();
-            mediaRecorder = null;
+    private void startPlaying() {
+        player = new MediaPlayer();
+        try {
+            player.setDataSource(recordFilePath);
+            player.prepare();
+            player.start();
+            Toast.makeText(this, "Playing started", Toast.LENGTH_SHORT).show();
+
+            player.setOnCompletionListener(mp -> {
+                Toast.makeText(this, "Playback complete", Toast.LENGTH_SHORT).show();
+                playButton.setText("Play Recording");
+                recordButton.setEnabled(true);
+                isStartPlaying = true;
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Playback failed", Toast.LENGTH_SHORT).show();
         }
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
+    }
+
+    private void stopPlaying() {
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+            Toast.makeText(this, "Playback stopped", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSION) {
+            isWork = grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+            if (!isWork) {
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 }

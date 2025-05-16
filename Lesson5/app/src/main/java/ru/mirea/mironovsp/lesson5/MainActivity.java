@@ -4,13 +4,13 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.SimpleAdapter;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,43 +20,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Получаем менеджер сенсоров
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        // Получаем список всех сенсоров
         List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        List<String> sensorDetails = new ArrayList<>();
 
-        for (Sensor sensor : sensors) {
-            String info =
-                            sensor.getName() + "\n" +
-                            "Тип: " + getSensorType(sensor.getType()) + "\n" +
-                            "Производитель: " + sensor.getVendor() + "\n" +
-                            "Версия: " + sensor.getVersion();
+        // Находим ListView для отображения данных
+        ListView listSensor = findViewById(R.id.list_view);
 
-            sensorDetails.add(info);
+        // Создаем список для отображения в ListView найденных датчиков
+        ArrayList<HashMap<String, Object>> arrayList = new ArrayList<>();
+
+        for (int i = 0; i < sensors.size(); i++) {
+            HashMap<String, Object> sensorTypeList = new HashMap<>();
+            sensorTypeList.put("Name", sensors.get(i).getName());
+            sensorTypeList.put("Value", sensors.get(i).getMaximumRange());
+            arrayList.add(sensorTypeList);
         }
 
-        if (sensorDetails.isEmpty()) {
-            Toast.makeText(this, "На устройстве нет датчиков", Toast.LENGTH_LONG).show();
-        } else {
-            ListView listView = findViewById(R.id.sensor_list);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    this,
-                    android.R.layout.simple_list_item_1,
-                    sensorDetails
-            );
-            listView.setAdapter(adapter);
-        }
-    }
+        // Создаем адаптер и устанавливаем тип адаптера - отображение двух полей
+        SimpleAdapter mHistory = new SimpleAdapter(
+                this,
+                arrayList,
+                android.R.layout.simple_list_item_2,
+                new String[]{"Name", "Value"},
+                new int[]{android.R.id.text1, android.R.id.text2});
 
-    private String getSensorType(int type) {
-        switch (type) {
-            case Sensor.TYPE_ACCELEROMETER: return "Акселерометр";
-            case Sensor.TYPE_GYROSCOPE: return "Гироскоп";
-            case Sensor.TYPE_LIGHT: return "Датчик освещенности";
-            case Sensor.TYPE_MAGNETIC_FIELD: return "Магнитометр";
-            case Sensor.TYPE_PROXIMITY: return "Датчик приближения";
-            case Sensor.TYPE_STEP_COUNTER: return "Счетчик шагов";
-            case Sensor.TYPE_HEART_RATE: return "Датчик пульса";
-            default: return "Неизвестный (" + type + ")";
-        }
+        listSensor.setAdapter(mHistory);
     }
 }

@@ -50,6 +50,8 @@ dependencies {
     implementation("androidx.work:work-runtime:2.10.1")
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
