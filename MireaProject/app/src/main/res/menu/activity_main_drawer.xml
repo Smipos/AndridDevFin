@@ -44,6 +44,15 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
 
+        <item
+            android:id="@+id/nav_altitude"
+            android:icon="@drawable/ic_terrain"
+            android:title="Barometr" />
+
+        <item
+            android:id="@+id/nav_microphone"
+            android:icon="@drawable/ic_mic"
+            android:title="Voice Analysis" />
 
     </group>
 </menu>

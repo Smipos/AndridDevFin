@@ -58,4 +58,16 @@
         android:name="ru.mirea.mironovsp.mireaproject.ui.FilesFragment"
         android:label="File processing"
         tools:layout="@layout/fragment_files" />
+
+    <fragment
+        android:id="@+id/nav_altitude"
+        android:name="ru.mirea.mironovsp.mireaproject.ui.AltitudeFragment"
+        android:label="Barometr"
+        tools:layout="@layout/fragment_altitude" />
+
+    <fragment
+        android:id="@+id/nav_microphone"
+        android:name="ru.mirea.mironovsp.mireaproject.ui.MicrophoneFragment"
+        android:label="Voice Analysis"
+        tools:layout="@layout/fragment_microphone" />
 </navigation>

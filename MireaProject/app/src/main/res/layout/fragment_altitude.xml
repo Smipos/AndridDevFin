@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/altitudeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:text="Высота: -- метров"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/pressureValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="Атм. давление: -- hPa"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/healthImpact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="Влияние на организм: --"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/healthAdvice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Рекомендации: --"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Начать мониторинг"
+            android:layout_marginTop="24dp"/>
+    </LinearLayout>
+</ScrollView>
